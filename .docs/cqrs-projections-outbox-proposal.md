@@ -1,6 +1,6 @@
 # Proposta: publicação de projections pela order_outbox
 
-**Status:** aguardando aprovação; nenhuma alteração de aplicação ou banco está autorizada por este documento.  
+**Status:** aprovado pelo usuário; produção transacional das sete projections iniciais e rebuild implementados no command.
 **Referência:** [Especificação de projections](cqrs-projections-spec.md).  
 **Escopo:** calcular snapshots no `ms-order-command`, gravá-los no PostgreSQL e preparar sua entrega ao `ms-order-query`, cujo banco é MySQL.
 
@@ -511,5 +511,56 @@ SQL fora desses serviços não produzirão projections automaticamente.
 - Implementar primeiro a produção dos snapshots/outbox e sua carga inicial; relay
   Kafka, consumidor MySQL e endpoints de projections ficam para etapa própria.
 
-A aprovação deste documento orientará a próxima implementação. Até lá, este arquivo
-é somente uma proposta; as entidades, migrations e serviços atuais permanecem como estão.
+## 13. Implementação da primeira etapa
+
+A aprovação foi concedida na conversa. Foram implementados os builders de cliente,
+produto e pedido, `ProjectionUpdateService`, `ProjectionPayloadSerializer`, locks
+das dependências, revisões por chave, payloads específicos e tombstones transacionais.
+
+A migration V3 preserva a tabela anterior como `order_outbox_legacy` e cria a nova
+`order_outbox` com os campos obrigatórios. O arquivo legado não participa do fluxo
+novo e não é apagado. Não se inventam snapshots históricos para suas linhas.
+
+A carga inicial/rebuild é explícita e paginada por UUID:
+
+```text
+POST /api/v1/projections/rebuild?resourceType=CUSTOMER&size=20
+POST /api/v1/projections/rebuild?resourceType=PRODUCT&size=20
+```
+
+A resposta inclui `processed`, `nextCursor`, `hasMore`. Continue com
+`&after=<nextCursor>` enquanto houver páginas. Cada cliente e seus pedidos formam
+uma transação; cada produto forma outra. Repetir uma página avança revisões, sem
+resetá-las. Chaves de revisão de recursos excluídos também são percorridas, gerando
+novos tombstones. Não há retry automático de comandos.
+
+A consulta da outbox aceita `eventType` e `projectionKey`, além de `orderId` e `status`.
+O campo `payload` da resposta é um objeto JSON, não uma string contendo JSON escapado.
+
+## 14. Relay no próprio command
+
+O relay Kafka foi implementado no `ms-order-command`, usando `@Scheduled` com
+`fixedDelay` e configuração `outbox.relay`. Não há aplicação ou deploy separado.
+O tópico padrão é `cqrs.projections.v1`; payloads são valores JSON e os metadados
+da seção 4 são headers UTF-8. O producer aguarda o ACK antes de marcar `SENDED`.
+
+Cada tentativa mantém uma transação e um lock `FOR UPDATE SKIP LOCKED` sobre uma
+linha. Revisões maiores da mesma projection não são selecionadas enquanto houver
+uma anterior não enviada. Instâncias concorrentes podem publicar chaves distintas.
+Os locks são liberados no commit, rollback ou perda da sessão de banco.
+
+A V4 adiciona `attempt_count`, `next_attempt_at`, `last_error` e índices. Falhas
+usam backoff exponencial, até o limite configurado. Eventos esgotados ficam em
+`ERRO` com `next_attempt_at` nulo, sem descarte automático, e bloqueiam revisões
+posteriores da mesma chave. `POST /api/v1/order-outbox/{id}/retry` reenfileira
+somente eventos `ERRO`, preservando sua identidade, versão e JSON.
+
+O scheduler fica habilitado por padrão; os limites e o provisionamento do tópico
+estão documentados no [README do command](../ms-order-command/README.md).
+A migração/relay não publica registros de `order_outbox_legacy` nem executa rebuild
+automaticamente. Duplicidade após ACK/antes do commit ou após timeout permanece
+possível e será tratada pelo consumidor por identidade e revisão.
+
+Consumidor MySQL, aplicação dos eventos no query, reconciliação de uma base de
+leitura existente e dashboard permanecem nas etapas posteriores. Seus critérios
+de aceite não são declarados concluídos pela implementação do relay.
