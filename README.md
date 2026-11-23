@@ -10,6 +10,11 @@ Os serviços Spring Boot estão em:
 Docker Compose com Kafka 4.1.2 em modo KRaft, PostgreSQL 17 e MySQL 8.4.
 Os três serviços possuem healthchecks e volumes persistentes.
 
+O serviço auxiliar `kafka-init` prepara o volume do Kafka com o proprietário
+`1000:1000`, usado pelo usuário `appuser` da imagem. O broker inicia após essa
+preparação, evitando falhas de permissão na gravação dos arquivos KRaft.
+É esperado que `kafka-init` apareça como `Exited (0)` após concluir.
+
 ## Iniciar
 
 ```powershell

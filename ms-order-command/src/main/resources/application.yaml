@@ -2,7 +2,7 @@ spring:
   application:
     name: ms-order-command
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/cqrs}
+    url: ${DB_URL:jdbc:postgresql://localhost:5436/cqrs}
     username: ${DB_USERNAME:cqrs}
     password: ${DB_PASSWORD:postgres_dev}
     hikari:
