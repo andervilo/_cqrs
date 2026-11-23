@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
 
 @Import(TestcontainersConfiguration.class)
-@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties="outbox.relay.enabled=false")
 class ProjectionFailureTests {
     @Autowired ProductService products;
     @Autowired JdbcTemplate jdbc;

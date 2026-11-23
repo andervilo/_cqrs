@@ -18,7 +18,7 @@ import tools.jackson.databind.JsonNode;
 import static org.assertj.core.api.Assertions.*;
 
 @Import(TestcontainersConfiguration.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "outbox.relay.enabled=false")
 class ProjectionOutboxTests {
     @Autowired CustomerService customers;
     @Autowired ProductService products;

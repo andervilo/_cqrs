@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Import({TestcontainersConfiguration.class, MsOrderCommandApplicationTests.FixtureConfiguration.class})
 @AutoConfigureMetrics
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "outbox.relay.enabled=false")
 class MsOrderCommandApplicationTests {
 
     private static final String TOPIC = "ms-order-command.integration.v1";

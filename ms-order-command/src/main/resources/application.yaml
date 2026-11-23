@@ -28,6 +28,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       properties:
         enable.idempotence: true
+        max.block.ms: ${outbox.relay.send-timeout-ms}
     consumer:
       group-id: ${KAFKA_CONSUMER_GROUP:ms-order-command}
       auto-offset-reset: earliest
@@ -67,3 +68,18 @@ management:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+outbox:
+  relay:
+    enabled: ${OUTBOX_RELAY_ENABLED:true}
+    topic: ${OUTBOX_RELAY_TOPIC:cqrs.projections.v1}
+    batch-size: ${OUTBOX_RELAY_BATCH_SIZE:100}
+    poll-interval-ms: ${OUTBOX_RELAY_POLL_INTERVAL_MS:1000}
+    initial-delay-ms: ${OUTBOX_RELAY_INITIAL_DELAY_MS:5000}
+    send-timeout-ms: ${OUTBOX_RELAY_SEND_TIMEOUT_MS:10000}
+    retry-initial-delay-ms: ${OUTBOX_RELAY_RETRY_INITIAL_DELAY_MS:1000}
+    retry-max-delay-ms: ${OUTBOX_RELAY_RETRY_MAX_DELAY_MS:60000}
+    max-attempts: ${OUTBOX_RELAY_MAX_ATTEMPTS:10}
+    create-topic: ${OUTBOX_RELAY_CREATE_TOPIC:true}
+    partitions: ${OUTBOX_RELAY_PARTITIONS:3}
+    replicas: ${OUTBOX_RELAY_REPLICAS:1}

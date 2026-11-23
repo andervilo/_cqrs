@@ -18,6 +18,12 @@ import java.util.*;
 public class OrderOutboxController {
     private final OrderOutboxService service;
     public OrderOutboxController(OrderOutboxService service) { this.service=service; }
+    @PostMapping("/{id}/retry")
+    @Operation(summary="Reenfileirar um evento ERRO preservando payload, identidade e revisao")
+    public ResponseEntity<Void> retry(@PathVariable UUID id) {
+        service.retry(id);
+        return ResponseEntity.accepted().build();
+    }
     @GetMapping("/{id}")
     public OutboxResponse get(@PathVariable UUID id) { return service.get(id); }
     @GetMapping

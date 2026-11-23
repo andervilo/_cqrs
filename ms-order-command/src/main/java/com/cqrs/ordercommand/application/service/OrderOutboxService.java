@@ -17,13 +17,16 @@ import java.util.UUID;
 public class OrderOutboxService {
     private final OrderOutboxRepository repository;
     private final ApiMapper mapper;
-    public OrderOutboxService(OrderOutboxRepository repository, ApiMapper mapper) {
-        this.repository = repository; this.mapper = mapper;
+    private final com.cqrs.ordercommand.infrastructure.persistence.OutboxRelayStore relay;
+    public OrderOutboxService(OrderOutboxRepository repository, ApiMapper mapper, com.cqrs.ordercommand.infrastructure.persistence.OutboxRelayStore relay) {
+        this.repository = repository; this.mapper = mapper; this.relay=relay;
     }
     @Transactional(propagation = Propagation.MANDATORY)
     public void append(java.util.Collection<OrderOutboxEntity> events) {
         repository.saveAllAndFlush(events);
     }
+    @Transactional
+    public void retry(UUID id) { relay.retry(id); }
     public OutboxResponse get(UUID id) {
         return mapper.outbox(repository.findById(id).orElseThrow(() -> new NotFoundException("Outbox")));
     }

@@ -8,4 +8,4 @@ import java.util.UUID;
 
 public record OutboxResponse(UUID id, UUID orderId, Instant dataCriacao, Instant dataEnvio, OutboxStatus status,
         ProjectionEventType eventType, ProjectionOperation operation, String projectionKey, long projectionVersion,
-        int schemaVersion, @JsonRawValue @Schema(type = "object") String payload) {}
+        int schemaVersion, int attemptCount, Instant nextAttemptAt, String lastError, @JsonRawValue @Schema(type = "object") String payload) {}

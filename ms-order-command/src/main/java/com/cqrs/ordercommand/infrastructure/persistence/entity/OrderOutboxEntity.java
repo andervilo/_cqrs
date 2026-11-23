@@ -29,6 +29,10 @@ public class OrderOutboxEntity {
     @Column(nullable = false, updatable = false) private long projectionVersion;
     @Column(nullable = false, updatable = false) private int schemaVersion;
 
+    @Column(insertable=false,updatable=false) private int attemptCount;
+    @Column(insertable=false,updatable=false) private Instant nextAttemptAt;
+    @Column(insertable=false,updatable=false,length=256) private String lastError;
+
     protected OrderOutboxEntity() {}
     public OrderOutboxEntity(OrderEntity order, ProjectionEventType type, ProjectionOperation operation,
             String key, long version, String payload) {
@@ -36,6 +40,9 @@ public class OrderOutboxEntity {
         this.status = OutboxStatus.PENDING; this.eventType = type; this.operation = operation;
         this.projectionKey = key; this.projectionVersion = version; this.schemaVersion = 1; this.payload = payload;
     }
+    public int getAttemptCount() { return attemptCount; }
+    public Instant getNextAttemptAt() { return nextAttemptAt; }
+    public String getLastError() { return lastError; }
     public UUID getId() { return id; }
     public OrderEntity getOrder() { return order; }
     public Instant getDataCriacao() { return dataCriacao; }
