@@ -12,6 +12,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
+import com.cqrs.ordercommand.application.projection.ProjectionUpdateService;
+import com.cqrs.ordercommand.infrastructure.persistence.ProjectionLocks;
+import org.springframework.transaction.annotation.Isolation;
 
 @Service
 @Transactional(readOnly = true)
@@ -19,21 +22,23 @@ public class OrderService {
     private final OrderRepository orders;
     private final CustomerRepository customers;
     private final ItemService items;
-    private final OrderOutboxService outbox;
+    private final ProjectionUpdateService projections;
+    private final ProjectionLocks locks;
     private final ApiMapper mapper;
     public OrderService(OrderRepository orders, CustomerRepository customers, ItemService items,
-                        OrderOutboxService outbox, ApiMapper mapper) {
+                        ProjectionUpdateService projections, ProjectionLocks locks, ApiMapper mapper) {
         this.orders = orders; this.customers = customers; this.items = items;
-        this.outbox = outbox; this.mapper = mapper;
+        this.projections=projections; this.locks=locks; this.mapper = mapper;
     }
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public OrderDtos.Response create(OrderDtos.Create input) {
+        locks.customer(input.customerId());
         var customer = customers.findById(input.customerId()).orElseThrow(() -> new NotFoundException("Customer"));
         if (!customer.isActive()) throw new BusinessConflictException("Cliente inativo nao pode criar pedidos.");
         var prepared = items.prepare(input.items());
         var order = Order.create(customer.getId(), prepared.items(), input.notes());
         var entity = orders.saveAndFlush(new OrderEntity(order, customer, prepared.catalog()));
-        outbox.enqueue(entity);
+        projections.orderChanged(entity.getId(), entity.getCustomer().getId(), true);
         return mapper.order(entity);
     }
     public OrderDtos.Response get(UUID id) { return mapper.order(require(id)); }
@@ -43,22 +48,24 @@ public class OrderService {
                 status == null ? cb.conjunction() : cb.equal(root.get("status"), status));
         return PageResponse.from(orders.findAll(filter, pageable).map(mapper::order));
     }
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public OrderDtos.Response replaceItems(UUID id, OrderDtos.ReplaceItems input) {
+        locks.orderCustomer(id);
         var entity = require(id);
         var prepared = items.prepare(input.items());
         var changed = entity.toDomain().replaceItems(prepared.items());
         entity.replaceItems(changed, prepared.catalog());
         orders.flush();
-        outbox.enqueue(entity);
+        projections.orderChanged(entity.getId(), entity.getCustomer().getId(), false);
         return mapper.order(entity);
     }
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public OrderDtos.Response cancel(UUID id) {
+        locks.orderCustomer(id);
         var entity = require(id);
         entity.cancel(entity.toDomain().cancel());
         orders.flush();
-        outbox.enqueue(entity);
+        projections.orderChanged(entity.getId(), entity.getCustomer().getId(), false);
         return mapper.order(entity);
     }
     private OrderEntity require(UUID id) {

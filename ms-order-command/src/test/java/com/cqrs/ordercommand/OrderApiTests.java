@@ -62,7 +62,7 @@ class OrderApiTests {
         assertThat(stored.path("items").get(0).path("productName").asText()).isEqualTo("Produto");
         assertThat(stored.path("totalAmount").decimalValue()).isEqualByComparingTo("36.90");
         var outbox = request("GET", "/order-outbox?orderId=" + orderId, null, 200);
-        assertThat(outbox.path("totalElements").asLong()).isEqualTo(1);
+        assertThat(outbox.path("totalElements").asLong()).isEqualTo(3);
         assertThat(outbox.path("content").get(0).path("status").asText()).isEqualTo("PENDING");
         assertThat(outbox.path("content").get(0).path("dataEnvio").isNull()).isTrue();
         request("DELETE", "/customers/" + customer, null, 409);
@@ -76,7 +76,7 @@ class OrderApiTests {
         request("PUT", "/orders/" + orderId + "/items", Map.of("items",
                 List.of(Map.of("productId", productId, "quantity", 1))), 409);
         assertThat(request("GET", "/order-outbox?orderId=" + orderId, null, 200)
-                .path("totalElements").asLong()).isEqualTo(3);
+                .path("totalElements").asLong()).isEqualTo(9);
     }
 
     @Test
@@ -130,6 +130,8 @@ class OrderApiTests {
                     Map.of("productId", product.path("id").asText(), "quantity", 1))), 409);
             assertThat(jdbc.queryForObject("SELECT count(*) FROM order_command.orders WHERE customer_id=?",
                     Integer.class, UUID.fromString(customer))).isZero();
+            assertThat(jdbc.queryForObject("SELECT max(version) FROM order_command.projection_revision WHERE projection_key=?",
+                    Long.class, customer)).isEqualTo(1);
         } finally {
             jdbc.execute("ALTER TABLE order_command.order_outbox DROP CONSTRAINT test_block_outbox");
         }
@@ -152,6 +154,22 @@ class OrderApiTests {
         request("GET", "/orders/" + other.path("id").asText() + "/items/" + itemId, null, 404);
         assertThat(request("GET", "/orders?customerId=" + customer, null, 200)
                 .path("totalElements").asLong()).isEqualTo(2);
+    }
+
+    @Test
+    void exposesProjectionPayloadAsJsonAndSupportsRebuildPages() throws Exception {
+        String id=customer();
+        var events=request("GET", "/order-outbox?eventType=CUSTOMER_SUMMARY&projectionKey="+id, null, 200);
+        assertThat(events.path("totalElements").asLong()).isEqualTo(1);
+        var event=events.path("content").get(0);
+        assertThat(event.path("orderId").isNull()).isTrue();
+        assertThat(event.path("payload").isObject()).isTrue();
+        assertThat(event.path("payload").path("customerId").asText()).isEqualTo(id);
+        assertThat(event.path("projectionVersion").asLong()).isEqualTo(1);
+        assertThat(event.path("operation").asText()).isEqualTo("UPSERT");
+        var page=request("POST", "/projections/rebuild?resourceType=PRODUCT&size=1",null,200);
+        assertThat(page.path("resourceType").asText()).isEqualTo("PRODUCT");
+        request("POST", "/projections/rebuild?resourceType=CUSTOMER&size=101",null,400);
     }
 
     @Test

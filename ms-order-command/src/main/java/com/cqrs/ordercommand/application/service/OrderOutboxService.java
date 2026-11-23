@@ -21,16 +21,18 @@ public class OrderOutboxService {
         this.repository = repository; this.mapper = mapper;
     }
     @Transactional(propagation = Propagation.MANDATORY)
-    public void enqueue(OrderEntity order) {
-        repository.saveAndFlush(new OrderOutboxEntity(order));
+    public void append(java.util.Collection<OrderOutboxEntity> events) {
+        repository.saveAllAndFlush(events);
     }
     public OutboxResponse get(UUID id) {
         return mapper.outbox(repository.findById(id).orElseThrow(() -> new NotFoundException("Outbox")));
     }
-    public PageResponse<OutboxResponse> list(UUID orderId, OutboxStatus status, Pageable pageable) {
+    public PageResponse<OutboxResponse> list(UUID orderId, OutboxStatus status, com.cqrs.ordercommand.domain.model.ProjectionEventType eventType, String projectionKey, Pageable pageable) {
         Specification<OrderOutboxEntity> filter = (root, query, cb) -> cb.and(
                 orderId == null ? cb.conjunction() : cb.equal(root.get("order").get("id"), orderId),
-                status == null ? cb.conjunction() : cb.equal(root.get("status"), status));
+                status == null ? cb.conjunction() : cb.equal(root.get("status"), status),
+                eventType == null ? cb.conjunction() : cb.equal(root.get("eventType"), eventType),
+                projectionKey == null ? cb.conjunction() : cb.equal(root.get("projectionKey"), projectionKey));
         return PageResponse.from(repository.findAll(filter, pageable).map(mapper::outbox));
     }
 }

@@ -1,0 +1,6 @@
+package com.cqrs.ordercommand.domain.model;
+
+public enum ProjectionEventType {
+    CUSTOMER_SUMMARY, CUSTOMER_DETAIL, PRODUCT_CATALOG, PRODUCT_DETAIL,
+    ORDER_SUMMARY, ORDER_DETAIL, CUSTOMER_ORDER_HISTORY, SALES_DASHBOARD
+}

@@ -17,14 +17,16 @@ import java.util.*;
 @Tag(name = "Order outbox")
 public class OrderOutboxController {
     private final OrderOutboxService service;
-    public OrderOutboxController(OrderOutboxService service) { this.service = service; }
+    public OrderOutboxController(OrderOutboxService service) { this.service=service; }
     @GetMapping("/{id}")
     public OutboxResponse get(@PathVariable UUID id) { return service.get(id); }
     @GetMapping
     public PageResponse<OutboxResponse> list(@RequestParam(required = false) UUID orderId,
             @RequestParam(required = false) OutboxStatus status,
+            @RequestParam(required = false) ProjectionEventType eventType,
+            @RequestParam(required = false) @Size(max = 128) String projectionKey,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return service.list(orderId, status, PageRequests.of(page, size, "dataCriacao"));
+        return service.list(orderId, status, eventType, projectionKey, PageRequests.of(page, size, "dataCriacao"));
     }
 }
