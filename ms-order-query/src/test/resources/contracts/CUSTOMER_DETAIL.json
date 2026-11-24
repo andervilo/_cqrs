@@ -1,0 +1,10 @@
+{
+  "customerId": "${CUSTOMER_ID}",
+  "name": "Maria Silva",
+  "email": "maria@example.com",
+  "phone": "+55 11 99999-9999",
+  "addresses": [],
+  "createdAt": "2026-11-20T12:00:00Z",
+  "orderCount": 1,
+  "lifetimeValue": 0.00
+}

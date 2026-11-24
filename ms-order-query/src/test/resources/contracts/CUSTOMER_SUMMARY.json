@@ -1,0 +1,7 @@
+{
+  "customerId": "${CUSTOMER_ID}",
+  "name": "Maria Silva",
+  "email": "maria@example.com",
+  "orderCount": 1,
+  "lastOrderAt": "2026-11-23T14:00:00Z"
+}

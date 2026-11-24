@@ -1,0 +1,10 @@
+{
+  "orderId": "${ORDER_ID}",
+  "customerId": "${CUSTOMER_ID}",
+  "customerName": "Maria Silva",
+  "createdAt": "2026-11-23T14:00:00Z",
+  "totalAmount": 300.00,
+  "currency": "BRL",
+  "status": "CREATED",
+  "itemCount": 2
+}

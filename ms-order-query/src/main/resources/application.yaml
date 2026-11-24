@@ -7,6 +7,7 @@ spring:
     password: ${DB_PASSWORD:mysql_dev}
     hikari:
       maximum-pool-size: ${DB_POOL_SIZE:10}
+      connection-init-sql: "SET time_zone = '+00:00'"
   jpa:
     open-in-view: false
     hibernate:
@@ -25,6 +26,9 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       properties:
         enable.idempotence: true
+        max.block.ms: ${query.projections.dlt-send-timeout-ms}
+        request.timeout.ms: 10000
+        delivery.timeout.ms: 30000
     consumer:
       group-id: ${KAFKA_CONSUMER_GROUP:ms-order-query}
       auto-offset-reset: earliest
@@ -64,3 +68,18 @@ management:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+query:
+  projections:
+    enabled: ${PROJECTION_CONSUMER_ENABLED:true}
+    topic: ${PROJECTION_TOPIC:cqrs.projections.v1}
+    dlt-topic: ${PROJECTION_DLT_TOPIC:cqrs.projections.v1.DLT}
+    consumer-name: ${PROJECTION_CONSUMER_NAME:order-query-projections}
+    concurrency: ${PROJECTION_CONCURRENCY:1}
+    max-attempts: ${PROJECTION_MAX_ATTEMPTS:3}
+    retry-initial-delay-ms: ${PROJECTION_RETRY_INITIAL_DELAY_MS:1000}
+    retry-max-delay-ms: ${PROJECTION_RETRY_MAX_DELAY_MS:10000}
+    dlt-send-timeout-ms: ${PROJECTION_DLT_SEND_TIMEOUT_MS:10000}
+    create-topics: ${PROJECTION_CREATE_TOPICS:true}
+    partitions: ${PROJECTION_PARTITIONS:3}
+    replicas: ${PROJECTION_REPLICAS:1}

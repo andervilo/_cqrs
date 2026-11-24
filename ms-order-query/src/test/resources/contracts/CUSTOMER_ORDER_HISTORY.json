@@ -1,0 +1,10 @@
+{
+  "orderId": "${ORDER_ID}",
+  "customerId": "${CUSTOMER_ID}",
+  "createdAt": "2026-11-23T14:00:00Z",
+  "status": "CREATED",
+  "totalAmount": 300.00,
+  "currency": "BRL",
+  "itemCount": 2,
+  "firstProductName": "Teclado"
+}

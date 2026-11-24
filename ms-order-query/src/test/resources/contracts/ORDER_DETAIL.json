@@ -1,0 +1,23 @@
+{
+  "orderId": "${ORDER_ID}",
+  "createdAt": "2026-11-23T14:00:00Z",
+  "customer": {
+    "customerId": "${CUSTOMER_ID}",
+    "name": "Maria Silva"
+  },
+  "items": [
+    {
+      "productId": "${PRODUCT_ID}",
+      "productName": "Teclado",
+      "quantity": 2,
+      "unitPrice": 150.00,
+      "subtotal": 300.00
+    }
+  ],
+  "subtotalAmount": 300.00,
+  "discountAmount": 0.00,
+  "shippingAmount": 0.00,
+  "totalAmount": 300.00,
+  "currency": "BRL",
+  "status": "CREATED"
+}

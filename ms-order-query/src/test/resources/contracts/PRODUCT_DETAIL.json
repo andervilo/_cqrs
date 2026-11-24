@@ -1,0 +1,10 @@
+{
+  "productId": "${PRODUCT_ID}",
+  "name": "Teclado",
+  "description": "Teclado USB",
+  "price": 150.00,
+  "currency": "BRL",
+  "imageUrls": [],
+  "available": true,
+  "attributes": {}
+}

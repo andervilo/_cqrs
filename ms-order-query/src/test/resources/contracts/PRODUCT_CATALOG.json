@@ -1,0 +1,9 @@
+{
+  "productId": "${PRODUCT_ID}",
+  "name": "Teclado",
+  "price": 150.00,
+  "currency": "BRL",
+  "thumbnailUrl": null,
+  "available": true,
+  "category": null
+}
