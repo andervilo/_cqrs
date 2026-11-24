@@ -561,6 +561,7 @@ A migração/relay não publica registros de `order_outbox_legacy` nem executa r
 automaticamente. Duplicidade após ACK/antes do commit ou após timeout permanece
 possível e será tratada pelo consumidor por identidade e revisão.
 
-Consumidor MySQL, aplicação dos eventos no query, reconciliação de uma base de
-leitura existente e dashboard permanecem nas etapas posteriores. Seus critérios
-de aceite não são declarados concluídos pela implementação do relay.
+O consumidor MySQL e a aplicação dos snapshots no query foram implementados conforme
+a [proposta de inbox](cqrs-query-inbox-proposal.md), com transação local, deduplicação
+e controle de revisão. Reconciliação por gerações de uma base de leitura existente
+e dashboard permanecem nas etapas posteriores.

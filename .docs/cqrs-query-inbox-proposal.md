@@ -1,6 +1,6 @@
 # Proposta: projections, consumer idempotente e inbox no ms-order-query
 
-**Status:** proposta para revisão; este documento não implementa alterações no projeto ou banco.
+**Status:** aprovado pelo usuário; implementação no `ms-order-query`, com validação por testes de integração.
 
 Referências do projeto: [catálogo das projections](cqrs-projections-spec.md) e
 [contratos da outbox/relay](cqrs-projections-outbox-proposal.md).
@@ -390,3 +390,28 @@ voltem a sobrescrever o estado ou recriar registros excluídos.
 
 Referências técnicas: [locking reads no MySQL 8.4](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html)
 e [tratamento de erros no Spring Kafka](https://docs.spring.io/spring-kafka/reference/kafka/annotation-error-handling.html).
+
+## 13. Implementação
+
+Foram criadas as migrations V1/V2 do query para as sete tabelas de projections,
+`inbox_event` e `projection_state`. Cada projection possui entidade, repository,
+query service, controller GET e DTO de resposta. Os contratos Kafka são separados
+dos DTOs HTTP, com MapStruct e conversão tipada das colunas JSON.
+
+`ProjectionEventDecoder` valida os sete headers, a chave, o contrato v1, os campos
+e os valores, e calcula o hash normalizado. `ProjectionInboxProcessor` delega a
+`ProjectionInboxTransaction`, que bloqueia o estado por chave e confirma inbox,
+projection e revisão na mesma transação MySQL. Colisões de unicidade são verificadas
+em nova transação após rollback. Duplicatas e versões antigas não reescrevem o snapshot.
+
+O listener `projection-consumer` usa o tópico `cqrs.projections.v1`, grupo
+`ms-order-query`, identidade lógica `order-query-projections` e ACK por registro.
+Ele retorna somente após o commit MySQL. O error handler aplica retry limitado;
+erros permanentes seguem para `cqrs.projections.v1.DLT`, exigindo sucesso da publicação.
+
+As configurações, consultas, migrations e procedimentos de carga inicial estão no
+[README do query](../ms-order-query/README.md). As fixtures de contrato são baseadas
+nos exemplos publicados pelo command, sem dependência do seu JAR.
+
+Autorização, retenção automática, rebuild por gerações e `SALES_DASHBOARD` permanecem
+fora desta etapa, conforme os limites descritos acima.

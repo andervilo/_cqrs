@@ -133,8 +133,9 @@ Não há retry automático; conflitos cancelam a operação inteira.
 posterior a `data_criacao`; em `PENDING`/`ERRO`, permanece nula.
 
 A API da outbox permite consulta e retry operacional. O relay no próprio command
-publica o JSON como valor Kafka e os metadados como headers. O consumidor do query
-ainda não foi implementado. `SALES_DASHBOARD` está reservado no enum, sem emissão.
+publica o JSON como valor Kafka e os metadados como headers. O `ms-order-query`
+consome esses eventos com inbox e controle de revisão, materializando as sete
+projections no MySQL. `SALES_DASHBOARD` está reservado no enum, sem emissão.
 Contratos e matriz de dependências estão na
 [especificação da outbox](../.docs/cqrs-projections-outbox-proposal.md).
 
