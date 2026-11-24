@@ -1,0 +1,4 @@
+management:
+  server:
+    port: ${MANAGEMENT_SERVER_PORT:9082}
+    address: ${MANAGEMENT_SERVER_ADDRESS:127.0.0.1}
