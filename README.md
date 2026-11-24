@@ -6,6 +6,12 @@ Os serviços Spring Boot estão em:
 | --- | --- | --- |
 | [ms-order-command](ms-order-command/README.md) | PostgreSQL | 8080 |
 | [ms-order-query](ms-order-query/README.md) | MySQL | 8081 |
+| [ms-api-gateway](ms-api-gateway/README.md) | Sem banco | 8082 |
+
+O gateway é a entrada única para os 28 endpoints de comando, consulta e manutenção.
+Preserva `/api/v1` para o command e `/api/queries` para o query, incluindo os GETs
+do modelo de escrita. Swagger centralizado: http://localhost:8082/swagger-ui.html.
+As aplicações são executadas por Maven/IDE; o Compose abaixo inicia a infraestrutura.
 
 Docker Compose com Kafka 4.1.2 em modo KRaft, PostgreSQL 17 e MySQL 8.4.
 Os três serviços possuem healthchecks e volumes persistentes.
