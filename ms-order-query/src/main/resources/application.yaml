@@ -70,6 +70,8 @@ springdoc:
     path: /swagger-ui.html
 
 query:
+  dashboard:
+    stale-seconds: ${QUERY_DASHBOARD_STALE_SECONDS:120}
   projections:
     enabled: ${PROJECTION_CONSUMER_ENABLED:true}
     topic: ${PROJECTION_TOPIC:cqrs.projections.v1}

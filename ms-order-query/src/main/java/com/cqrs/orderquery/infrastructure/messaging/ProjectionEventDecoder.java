@@ -14,6 +14,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.*;
 import tools.jackson.core.StreamReadFeature;
+import com.cqrs.orderquery.application.dashboard.DashboardSnapshot;
+import com.cqrs.orderquery.application.dashboard.DashboardContractValidator;
 
 @Component
 public class ProjectionEventDecoder {
@@ -50,10 +52,20 @@ public class ProjectionEventDecoder {
                         .with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readTree(record.value());
                 if(!tree.isObject() || !tree.isEmpty()) throw new InvalidProjectionEvent("DELETE requires an empty JSON object");
             } else {
-                snapshot=json.readerFor(handler.payloadType()).with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                var reader=json.readerFor(handler.payloadType()).with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                         .with(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
                         .without(DeserializationFeature.ACCEPT_FLOAT_AS_INT)
-                        .with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readValue(record.value());
+                        .with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+                if(type==ProjectionEventType.SALES_DASHBOARD) {
+                    if(record.value().getBytes(StandardCharsets.UTF_8).length>512*1024)
+                        throw new InvalidProjectionEvent("Dashboard exceeds payload limit");
+                    new DashboardContractValidator().validateStructure(json.reader()
+                            .with(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
+                            .with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readTree(record.value()));
+                    reader=reader.with(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES)
+                            .with(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
+                }
+                snapshot=reader.readValue(record.value());
             }
         } catch(InvalidProjectionEvent error) { throw error; }
         catch(RuntimeException error) { throw new InvalidProjectionEvent("Invalid JSON for projection contract"); }
@@ -64,6 +76,7 @@ public class ProjectionEventDecoder {
                     violations.stream().map(v -> v.getPropertyPath().toString()).sorted().findFirst().orElse("unknown"));
             if(!key.equals(snapshot.identity())) throw new InvalidProjectionEvent("Snapshot identity disagrees with header");
             validateAmounts(snapshot);
+            if(snapshot instanceof DashboardSnapshot dashboard)new DashboardContractValidator().validate(dashboard);
         }
         var contents=new TreeMap<String,Object>();
         contents.put("eventType",type.name());contents.put("projectionKey",key.toString());
