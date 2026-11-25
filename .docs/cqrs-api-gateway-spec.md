@@ -6,6 +6,8 @@
 
 **Aplicação proposta:** `ms-api-gateway`.
 
+**Extensão de 25/11/2026:** o dashboard comercial acrescenta `GET /api/queries/dashboard/sales`, scope `cqrs.dashboard.read`, totalizando 29 operações. Os catálogos de 28 operações abaixo descrevem a entrega inicial; a [proposta do dashboard](cqrs-sales-dashboard-proposal.md) detalha a extensão e o rebuild assíncrono.
+
 **Objetivo:** oferecer ao frontend e a outros serviços uma única origem HTTP para todos os endpoints de comando, consulta e manutenção existentes, preservando os contratos e a separação CQRS.
 
 ## 1. Base da especificação

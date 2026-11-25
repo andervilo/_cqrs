@@ -135,7 +135,8 @@ posterior a `data_criacao`; em `PENDING`/`ERRO`, permanece nula.
 A API da outbox permite consulta e retry operacional. O relay no próprio command
 publica o JSON como valor Kafka e os metadados como headers. O `ms-order-query`
 consome esses eventos com inbox e controle de revisão, materializando as sete
-projections no MySQL. `SALES_DASHBOARD` está reservado no enum, sem emissão.
+projections no MySQL. `SALES_DASHBOARD` é agregado por janela, com cálculo durável
+separado descrito abaixo; sua emissão depende de `DASHBOARD_ENABLED=true`.
 Contratos e matriz de dependências estão na
 [especificação da outbox](../.docs/cqrs-projections-outbox-proposal.md).
 
@@ -295,3 +296,86 @@ Execute com `java -jar target/ms-order-command-0.0.1-SNAPSHOT.jar`.
 Referências: [MapStruct](https://mapstruct.org/documentation/stable/reference/html/),
 [constraint triggers PostgreSQL](https://www.postgresql.org/docs/17/sql-createtrigger.html),
 [Spring Boot](https://docs.spring.io/spring-boot/).
+
+## Dashboard comercial agregado
+
+Referência: [proposta aprovada](../.docs/cqrs-sales-dashboard-proposal.md).
+O command calcula snapshots completos de TODAY, LAST_7_DAYS, LAST_30_DAYS,
+MONTH_TO_DATE e PREVIOUS_MONTH. Incluem métricas atuais/anteriores, direcionadores
+da variação de valor, produtos, compradores, séries, carteira antiga e sinais
+explicáveis. Receita, margem e lucro permanecem indisponíveis, sem simular zero.
+
+Antes de habilitar, atualizar **todos** os consumers do query para suportarem o
+contrato SALES_DASHBOARD v1. Então, no ambiente do command:
+
+```powershell
+$env:DASHBOARD_ENABLED='true'
+.\mvnw.cmd spring-boot:run
+```
+
+O padrão é desabilitado para permitir rollout seguro. Mesmo desabilitado, criar,
+substituir itens e cancelar pedidos registram uma solicitação na transação de
+negócio. Essas solicitações ficam duráveis até a ativação. Não há cálculo global
+na transação do pedido. Solicitação sem commit não é processada.
+
+A V5 cria `dashboard_refresh_request` e cinco linhas de
+`dashboard_refresh_control`, com UUIDs fixos terminados em cb001–cb005 na ordem das
+janelas acima. Dispatcher consolida solicitações; worker bloqueia uma janela com
+SKIP LOCKED e calcula tudo em REPEATABLE_READ. Snapshot, revisão, outbox e geração
+concluída são confirmados juntos. Comandos não bloqueiam as linhas globais.
+
+O payload é um agregado, nunca um pedido individual. A outbox usa
+`order_id=NULL`, tipo SALES_DASHBOARD e chave `dashboardId`. O relay existente
+publica no tópico configurado. Reentrega não duplica indicadores no query.
+
+| Variável | Padrão |
+| --- | --- |
+| DASHBOARD_ENABLED | false |
+| DASHBOARD_DISPATCH_BATCH_SIZE | 100 |
+| DASHBOARD_DISPATCH_INTERVAL_MS | 1000 |
+| DASHBOARD_WORKER_INTERVAL_MS | 2000 |
+| DASHBOARD_INITIAL_DELAY_MS | 5000 |
+| DASHBOARD_DEBOUNCE_MS | 3000, máximo 3000 |
+| DASHBOARD_TEMPORAL_INTERVAL_MS | 60000 |
+| DASHBOARD_MAX_ATTEMPTS | 3 |
+| DASHBOARD_RETRY_INITIAL_DELAY_MS / DASHBOARD_RETRY_MAX_DELAY_MS | 1000 / 30000 |
+| DASHBOARD_STATEMENT_TIMEOUT_MS | 30000 |
+
+Limites dos sinais: mínimo de 30 pedidos, cancelamento ≥10% com aumento ≥5 p.p.,
+queda de demanda ≥15%, crescimento de valor ativo ≥15%, produto com base ≥5 pedidos
+e queda ≥20%, concentração de clientes ≥60% com base ≥20 compradores. As variáveis
+`DASHBOARD_MINIMUM_ORDER_SAMPLE`, `DASHBOARD_CANCELLATION_RATE_THRESHOLD`,
+`DASHBOARD_CANCELLATION_INCREASE_POINTS`, `DASHBOARD_DEMAND_DROP_PERCENT`,
+`DASHBOARD_RETAINED_VALUE_GROWTH_PERCENT`, `DASHBOARD_MINIMUM_PRODUCT_SAMPLE`,
+`DASHBOARD_PRODUCT_DROP_PERCENT`, `DASHBOARD_MINIMUM_BUYER_SAMPLE` e
+`DASHBOARD_CUSTOMER_CONCENTRATION_PERCENT` permitem ajustar esses parâmetros.
+O payload publica os limites efetivos e a versão das regras. A idade da carteira
+usa 48h, com faixas completas e precisão de microssegundos.
+
+Para solicitar reconstrução, sem paginação por pedido:
+
+```http
+POST /api/v1/projections/rebuild?resourceType=DASHBOARD
+```
+
+Retorna 202 com requestId/periodCodes. Não aceita after/size; CUSTOMER/PRODUCT
+mantêm 200 e paginação. Pelo gateway, requer manutenção habilitada e cqrs.ops.write.
+O agendamento persiste mesmo com o worker desabilitado, mas só será executado após
+ativação. O refresh temporal continua atualizando janelas/idade sem novos comandos.
+
+Tentativas esgotadas preservam a última projection e ficam visíveis no controle.
+Solicitações normais/temporais não reiniciam o limite; um rebuild explícito libera
+nova tentativa. Falha no relay é tratada separadamente pela outbox: um evento ERRO
+esgotado bloqueia revisões posteriores da janela até seu retry operacional.
+Não apagar inbox, controle ou outbox para forçar atualização.
+
+Métricas: `dashboard.refresh.pending.requests`, `dashboard.refresh.age.seconds`
+por janela, `dashboard.refresh.dispatched`, `dashboard.refresh.calculated`,
+`dashboard.refresh.failed`, `dashboard.refresh.exhausted` e duração em
+`dashboard.refresh.calculation`. Idade -1 indica ausência de cálculo concluído.
+Solicitações processadas são preservadas; não há limpeza automática inicial.
+
+SQL agregado roda no PostgreSQL, com retorno limitado a escalares, dias e rankings;
+não há carga de toda a base em memória. A meta de 30s requer ensaio sob carga
+definida e não constitui SLA de produção. O schema/contrato fica em
+[.docs/contracts](../.docs/contracts/sales-dashboard-v1.schema.json).

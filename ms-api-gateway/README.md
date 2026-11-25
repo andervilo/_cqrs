@@ -7,7 +7,7 @@ As versões Boot dos serviços podem diferir: a comunicação é HTTP.
 
 Especificação e catálogo completo: [API Gateway](../.docs/cqrs-api-gateway-spec.md).
 A allowlist `EndpointCatalog` é compartilhada por rotas, segurança, tratamento de
-métodos e exposição OpenAPI. São 21 operações no command e sete no query.
+métodos e exposição OpenAPI. São 21 operações no command e oito no query.
 
 ## Executar localmente
 
@@ -45,6 +45,10 @@ O `.env` do Compose não é carregado automaticamente pelas aplicações.
 | Métricas locais | `/actuator/prometheus` |
 
 O “Try it out” usa a origem pública configurada, sem alterar os DTOs dos serviços.
+Dashboard: `GET /api/queries/dashboard/sales?period=LAST_30_DAYS`. Retorna o agregado
+calculado no command, com comparativos, sinais e disponibilidade READY/STALE.
+Sem primeiro snapshot, retorna 503 DASHBOARD_INITIALIZING. Atualize os consumers
+e habilite `DASHBOARD_ENABLED=true` no command; o gateway não calcula o dashboard.
 Requisições ao query podem retornar estado antigo ou `404` logo após uma escrita.
 Usar a resposta do comando como confirmação imediata; atualizar projections com
 polling limitado no caller. Não há fallback ao command, cache ou retry automático,
@@ -83,9 +87,10 @@ infraestrutura. Não há discovery automático ou configuração dinâmica de ro
 
 Manutenção habilitada expõe consultas/retry de `/api/v1/order-outbox` e
 `POST /api/v1/projections/rebuild`. Quando desabilitada, esses caminhos retornam
-`404` e não aparecem nos documentos OpenAPI servidos pelo gateway. Rebuild é uma
-página por chamada, com `resourceType`, `after`, `size` e cursor na resposta; o
-gateway não continua páginas nem repete comandos.
+`404` e não aparecem nos documentos OpenAPI servidos pelo gateway. Rebuild de
+CUSTOMER/PRODUCT é uma página por chamada, com `after`, `size` e cursor; o de
+DASHBOARD agenda as cinco janelas, sem after/size, e retorna 202. O gateway não
+continua páginas nem repete comandos.
 
 O limite de corpo é aplicado antes de enviar ao backend, inclusive sem
 `Content-Length`. O buffer é limitado pelo tamanho configurado. `400/404/409/500`
@@ -105,6 +110,7 @@ sem trocar o token. Não há login, emissão de tokens ou sessão por cookie.
 | Operação | Scope |
 | --- | --- |
 | GET de projections | `cqrs.read` |
+| Dashboard comercial | `cqrs.dashboard.read` |
 | GET de negócio no command | `cqrs.command.read` |
 | Escrita de negócio | `cqrs.write` |
 | GET de outbox | `cqrs.ops.read` |
@@ -146,7 +152,7 @@ conforme o ambiente; não há coletor adicionado ao Compose.
 .\mvnw.cmd clean verify
 ```
 
-Testes HTTP com servidores locais verificam as 28 operações, preservação de corpo,
+Testes HTTP com servidores locais verificam as 29 operações, preservação de corpo,
 query/headers/status, `Location`, métodos, CORS, manutenção, JWTs RSA assinados
 (incluindo emissor/audiência/expiração/assinatura inválidos), scopes, Swagger,
 limite fixo/chunked, indisponibilidade, timeout e ausência de retry de comandos.
@@ -161,6 +167,8 @@ Smoke integrado, na pasta do gateway, com Java/Maven/Docker disponíveis:
 O script gera os três JARs, cria PostgreSQL/MySQL/Kafka temporários e inicia as três
 aplicações em portas livres. Cria cliente, produto e pedido pelo gateway e aguarda
 o detalhe projetado no MySQL, atravessando outbox, relay, Kafka e inbox reais.
+Também habilita o worker e verifica o dashboard agregado após criar o pedido,
+substituir seus itens e cancelar, além do rebuild assíncrono com resposta 202.
 Também verifica os OpenAPI centralizados. Usa containers próprios, sem volumes do
 Compose; remove seus containers e processos no `finally`. Logs ficam em
 `target/smoke-<id>`. Com JARs já gerados, usar `-SkipBuild`.

@@ -1,7 +1,7 @@
 # ms-order-query
 
 API de leitura CQRS com Java 21, Spring Boot 4.2.0, MySQL 8.4 e Kafka.
-Materializa as sete projections publicadas pelo command, com inbox idempotente,
+Materializa as sete projections de recursos e o dashboard agregado publicado pelo command, com inbox idempotente,
 controle de revisão e DTOs HTTP separados dos modelos de persistência.
 
 ## Executar
@@ -45,7 +45,8 @@ UUIDs usam `BINARY(16)` sem reorganização de bytes, equivalentes a
 Listas de itens, endereços, imagens e atributos ficam em colunas JSON da projection
 correspondente. Não há foreign keys entre projections nem consulta ao PostgreSQL
 do command. O consumer preserva os snapshots recebidos, inclusive preços e nomes
-históricos. `SALES_DASHBOARD` permanece reservado e não suportado nesta versão.
+históricos. `SALES_DASHBOARD` materializa um snapshot agregado por janela,
+independente das sete projections de recursos, conforme a seção abaixo.
 
 ## Endpoints somente de consulta
 
@@ -196,3 +197,48 @@ java -jar target/ms-order-query-0.0.1-SNAPSHOT.jar
 ```
 
 Projeto e regras: [proposta aprovada](../.docs/cqrs-query-inbox-proposal.md).
+
+## Dashboard comercial
+
+```http
+GET /api/queries/dashboard/sales?period=LAST_30_DAYS
+```
+
+Períodos: TODAY, LAST_7_DAYS, LAST_30_DAYS (padrão), MONTH_TO_DATE e PREVIOUS_MONTH.
+Não aceita from/to, timezone, parâmetros desconhecidos ou repetidos; retorna 400.
+Gateway expõe o mesmo caminho com scope exclusivo `cqrs.dashboard.read`.
+
+O command publica SALES_DASHBOARD v1 com métricas, comparativos, regras/sinais,
+rankings e séries prontos. O query valida o contrato inteiro e materializa o JSON
+em `sales_dashboard_projection` (V3). Não calcula indicadores nem consulta o
+PostgreSQL. Inbox, revisão e snapshot são confirmados em uma transação MySQL.
+Duplicidade, eventos antigos, tombstones, retry e DLT mantêm as garantias existentes.
+
+Resposta: `dashboard` (DTO HTTP de negócio), `availability` e `servedAt`.
+`availability.status` é READY ou STALE, com idade, projectedAt e warning. O query
+calcula apenas disponibilidade. `QUERY_DASHBOARD_STALE_SECONDS` pode configurar
+o limiar, padrão 120s; mudança de âncora de calendário também marca defasagem.
+sourceObservedAt representa início da leitura consistente, sem garantir inclusão
+de todos os commits até aquele horário. Não substituir por watermark de completude.
+
+Antes do primeiro snapshot: 503 Problem Details, code DASHBOARD_INITIALIZING e
+Retry-After: 5. Janela efetivamente calculada sem pedidos: 200 com zeros reais e
+razões sem denominador indisponíveis. Receita/margem/lucro não modelados são null
+com motivo, nunca zero artificial. O último snapshot íntegro permanece disponível
+como STALE em caso de atraso/falha do cálculo ou do transporte.
+
+TODAY compara com o mesmo tempo decorrido de ontem; janelas de sete/trinta dias
+deslocam datas locais; MONTH_TO_DATE/PREVIOUS_MONTH usam janela anterior de mesma
+duração. Os limites exatos e status de comparação vêm no payload. Estado atual
+reavalia a coorte de criação, inclusive após cancelamentos antigos. Não representa
+um fechamento contábil imutável nem a data do cancelamento.
+
+Links são estruturados e restritos a recursos existentes. Dados de outra projection
+podem estar em estágio diferente de atualização. Não existe filtro de pedidos por
+produto ou informação de motivo de cancelamento neste modelo.
+
+Contrato completo: [JSON Schema](../.docs/contracts/sales-dashboard-v1.schema.json)
+e [proposta](../.docs/cqrs-sales-dashboard-proposal.md). Fixtures integrais são
+produzidas pelos testes do command e copiadas para `src/test/resources/contracts`,
+sem dependência do seu JAR. O validador também confere identidades, janelas,
+comparativos, regras de sinais, somas, precisão, rankings e segurança dos links.

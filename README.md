@@ -8,10 +8,15 @@ Os serviços Spring Boot estão em:
 | [ms-order-query](ms-order-query/README.md) | MySQL | 8081 |
 | [ms-api-gateway](ms-api-gateway/README.md) | Sem banco | 8082 |
 
-O gateway é a entrada única para os 28 endpoints de comando, consulta e manutenção.
+O gateway é a entrada única para os 29 endpoints de comando, consulta e manutenção.
 Preserva `/api/v1` para o command e `/api/queries` para o query, incluindo os GETs
 do modelo de escrita. Swagger centralizado: http://localhost:8082/swagger-ui.html.
 As aplicações são executadas por Maven/IDE; o Compose abaixo inicia a infraestrutura.
+
+Dashboard comercial: `GET /api/queries/dashboard/sales?period=LAST_30_DAYS` pela
+porta 8082. Após atualizar os consumers do query, habilite `DASHBOARD_ENABLED=true`
+no command para calcular as cinco janelas. Consulte a
+[proposta e referência de implementação](.docs/cqrs-sales-dashboard-proposal.md).
 
 Docker Compose com Kafka 4.1.2 em modo KRaft, PostgreSQL 17 e MySQL 8.4.
 Os três serviços possuem healthchecks e volumes persistentes.

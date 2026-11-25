@@ -1,0 +1,916 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://cqrs.example/contracts/sales-dashboard-v1.schema.json",
+  "title" : "SALES_DASHBOARD v1 - aggregated commercial dashboard",
+  "$ref" : "#/$defs/DashboardSnapshot",
+  "$defs" : {
+    "DashboardSnapshot" : {
+      "properties" : {
+        "dashboardId" : {
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "periodCode" : {
+          "enum" : [ "TODAY", "LAST_7_DAYS", "LAST_30_DAYS", "MONTH_TO_DATE", "PREVIOUS_MONTH" ],
+          "type" : "string"
+        },
+        "timeZone" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "currency" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "sourceObservedAt" : {
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "computedAt" : {
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "definitionsVersion" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "rulesVersion" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "period" : {
+          "$ref" : "#/$defs/Period"
+        },
+        "comparison" : {
+          "$ref" : "#/$defs/Comparison"
+        },
+        "summary" : {
+          "maxProperties" : 32,
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Metric"
+          }
+        },
+        "orders" : {
+          "$ref" : "#/$defs/OrderStats"
+        },
+        "previousOrders" : {
+          "anyOf" : [ {
+            "$ref" : "#/$defs/OrderStats"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "customers" : {
+          "$ref" : "#/$defs/BuyerStats"
+        },
+        "previousCustomers" : {
+          "anyOf" : [ {
+            "$ref" : "#/$defs/BuyerStats"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "valueChangeDrivers" : {
+          "$ref" : "#/$defs/ValueDrivers"
+        },
+        "products" : {
+          "$ref" : "#/$defs/Products"
+        },
+        "daily" : {
+          "items" : {
+            "$ref" : "#/$defs/Day"
+          },
+          "type" : "array",
+          "maxItems" : 128
+        },
+        "comparisonDaily" : {
+          "items" : {
+            "$ref" : "#/$defs/Day"
+          },
+          "type" : "array",
+          "maxItems" : 128
+        },
+        "openPortfolio" : {
+          "$ref" : "#/$defs/Portfolio"
+        },
+        "insights" : {
+          "items" : {
+            "$ref" : "#/$defs/Insight"
+          },
+          "type" : "array",
+          "maxItems" : 128
+        },
+        "additionalInsightCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "unavailableMetrics" : {
+          "items" : {
+            "$ref" : "#/$defs/UnavailableMetric"
+          },
+          "type" : "array",
+          "maxItems" : 128
+        },
+        "appliedRules" : {
+          "$ref" : "#/$defs/Rules"
+        },
+        "dataCoverage" : {
+          "$ref" : "#/$defs/Coverage"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "dashboardId", "periodCode", "timeZone", "currency", "sourceObservedAt", "computedAt", "definitionsVersion", "rulesVersion", "period", "comparison", "summary", "orders", "previousOrders", "customers", "previousCustomers", "valueChangeDrivers", "products", "daily", "comparisonDaily", "openPortfolio", "insights", "additionalInsightCount", "unavailableMetrics", "appliedRules", "dataCoverage" ]
+    },
+    "Period" : {
+      "properties" : {
+        "from" : {
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "to" : {
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "inProgress" : {
+          "type" : "boolean"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "from", "to", "inProgress" ]
+    },
+    "Comparison" : {
+      "properties" : {
+        "mode" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "from" : {
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "to" : {
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "status" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "durationSeconds" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "mode", "from", "to", "status", "durationSeconds" ]
+    },
+    "Metric" : {
+      "properties" : {
+        "value" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "previousValue" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "changeAbsolute" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "changePercent" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "changePercentagePoints" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "status" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "previousStatus" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "comparisonStatus" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "unit" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "favorableDirection" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "value", "previousValue", "changeAbsolute", "changePercent", "changePercentagePoints", "status", "previousStatus", "comparisonStatus", "unit", "favorableDirection" ]
+    },
+    "OrderStats" : {
+      "properties" : {
+        "orderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "activeOrderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "cancelledOrderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "requestedValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "retainedOrderValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "cancelledOrderValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "cancellationRate" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "cancellationValueRate" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "averageActiveOrderValue" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "requestedUnits" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "retainedUnits" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "cancelledUnits" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "orderCount", "activeOrderCount", "cancelledOrderCount", "requestedValue", "retainedOrderValue", "cancelledOrderValue", "cancellationRate", "cancellationValueRate", "averageActiveOrderValue", "requestedUnits", "retainedUnits", "cancelledUnits" ]
+    },
+    "BuyerStats" : {
+      "properties" : {
+        "activeBuyerCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "newActiveBuyerCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "returningActiveBuyerCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "returningBuyerShare" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "ordersPerActiveBuyer" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "top5CustomerValueShare" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "top5CustomerRetainedValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "activeBuyerCount", "newActiveBuyerCount", "returningActiveBuyerCount", "returningBuyerShare", "ordersPerActiveBuyer", "top5CustomerValueShare", "top5CustomerRetainedValue" ]
+    },
+    "ValueDrivers" : {
+      "properties" : {
+        "status" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "totalChange" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "volumeEffect" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "averageValueEffect" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "status", "totalChange", "volumeEffect", "averageValueEffect" ]
+    },
+    "Products" : {
+      "properties" : {
+        "top5ProductValueShare" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "previousTop5ProductValueShare" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "otherProductsRetainedValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "byRetainedValue" : {
+          "items" : {
+            "$ref" : "#/$defs/Product"
+          },
+          "type" : "array",
+          "maxItems" : 128
+        },
+        "byRetainedUnits" : {
+          "items" : {
+            "$ref" : "#/$defs/Product"
+          },
+          "type" : "array",
+          "maxItems" : 128
+        },
+        "declining" : {
+          "items" : {
+            "$ref" : "#/$defs/Product"
+          },
+          "type" : "array",
+          "maxItems" : 128
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "top5ProductValueShare", "previousTop5ProductValueShare", "otherProductsRetainedValue", "byRetainedValue", "byRetainedUnits", "declining" ]
+    },
+    "Product" : {
+      "properties" : {
+        "productId" : {
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "productName" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "retainedUnits" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "activeOrderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "retainedOrderValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "cancelledOrderValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "previousRetainedUnits" : {
+          "anyOf" : [ {
+            "maximum" : 9223372036854775807,
+            "minimum" : 0,
+            "type" : "integer"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "previousActiveOrderCount" : {
+          "anyOf" : [ {
+            "maximum" : 9223372036854775807,
+            "minimum" : 0,
+            "type" : "integer"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "previousRetainedOrderValue" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "previousCancelledOrderValue" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "changeAbsolute" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "changePercent" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "comparisonStatus" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "retainedValueShare" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "cancellationValueRate" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "productId", "productName", "retainedUnits", "activeOrderCount", "retainedOrderValue", "cancelledOrderValue", "previousRetainedUnits", "previousActiveOrderCount", "previousRetainedOrderValue", "previousCancelledOrderValue", "changeAbsolute", "changePercent", "comparisonStatus", "retainedValueShare", "cancellationValueRate" ]
+    },
+    "Day" : {
+      "properties" : {
+        "date" : {
+          "format" : "date",
+          "type" : "string"
+        },
+        "from" : {
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "to" : {
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "orderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "activeOrderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "cancelledOrderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "requestedValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "retainedOrderValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "cancelledOrderValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "requestedUnits" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "retainedUnits" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "cancelledUnits" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "activeBuyerCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "date", "from", "to", "orderCount", "activeOrderCount", "cancelledOrderCount", "requestedValue", "retainedOrderValue", "cancelledOrderValue", "requestedUnits", "retainedUnits", "cancelledUnits", "activeBuyerCount" ]
+    },
+    "Portfolio" : {
+      "properties" : {
+        "scope" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "ageBuckets" : {
+          "items" : {
+            "$ref" : "#/$defs/AgeBucket"
+          },
+          "type" : "array",
+          "maxItems" : 128
+        },
+        "orderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "value" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "olderThanOrEqual48h" : {
+          "$ref" : "#/$defs/AgeBucket"
+        },
+        "oldestCreatedAt" : {
+          "anyOf" : [ {
+            "format" : "date-time",
+            "type" : "string"
+          }, {
+            "type" : "null"
+          } ]
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "scope", "ageBuckets", "orderCount", "value", "olderThanOrEqual48h", "oldestCreatedAt" ]
+    },
+    "AgeBucket" : {
+      "properties" : {
+        "code" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "orderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "value" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "drillDown" : {
+          "$ref" : "#/$defs/DrillDown"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "code", "orderCount", "value", "drillDown" ]
+    },
+    "DrillDown" : {
+      "properties" : {
+        "method" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "path" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "query" : {
+          "maxProperties" : 32,
+          "type" : "object",
+          "additionalProperties" : {
+            "maxLength" : 1024,
+            "type" : "string"
+          }
+        },
+        "requiredScope" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "method", "path", "query", "requiredScope" ]
+    },
+    "Insight" : {
+      "properties" : {
+        "code" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "priority" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "title" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "description" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "evidence" : {
+          "$ref" : "#/$defs/Evidence"
+        },
+        "exposure" : {
+          "$ref" : "#/$defs/Exposure"
+        },
+        "suggestedAction" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "drillDown" : {
+          "$ref" : "#/$defs/DrillDown"
+        },
+        "limitations" : {
+          "items" : {
+            "maxLength" : 1024,
+            "type" : "string"
+          },
+          "type" : "array",
+          "maxItems" : 128
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "code", "priority", "title", "description", "evidence", "exposure", "suggestedAction", "drillDown", "limitations" ]
+    },
+    "Evidence" : {
+      "properties" : {
+        "metric" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "currentValue" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "previousValue" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "change" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "currentSampleSize" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "previousSampleSize" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "rule" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "metric", "currentValue", "previousValue", "change", "currentSampleSize", "previousSampleSize", "rule" ]
+    },
+    "Exposure" : {
+      "properties" : {
+        "orderCount" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "value" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "orderCount", "value" ]
+    },
+    "UnavailableMetric" : {
+      "properties" : {
+        "code" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "value" : {
+          "anyOf" : [ {
+            "multipleOf" : 0.01,
+            "type" : "number"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "status" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "reason" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "code", "value", "status", "reason" ]
+    },
+    "Rules" : {
+      "properties" : {
+        "minimumOrderSample" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "cancellationRateThreshold" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "cancellationIncreasePoints" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "demandDropPercent" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "retainedValueGrowthPercent" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "minimumProductSample" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "productDropPercent" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "minimumBuyerSample" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        },
+        "customerConcentrationPercent" : {
+          "multipleOf" : 0.01,
+          "type" : "number"
+        },
+        "agingHours" : {
+          "maximum" : 9223372036854775807,
+          "minimum" : 0,
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "minimumOrderSample", "cancellationRateThreshold", "cancellationIncreasePoints", "demandDropPercent", "retainedValueGrowthPercent", "minimumProductSample", "productDropPercent", "minimumBuyerSample", "customerConcentrationPercent", "agingHours" ]
+    },
+    "Coverage" : {
+      "properties" : {
+        "source" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "generation" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        },
+        "earliestOrderAt" : {
+          "anyOf" : [ {
+            "format" : "date-time",
+            "type" : "string"
+          }, {
+            "type" : "null"
+          } ]
+        },
+        "completeness" : {
+          "maxLength" : 1024,
+          "type" : "string"
+        }
+      },
+      "additionalProperties" : false,
+      "type" : "object",
+      "required" : [ "source", "generation", "earliestOrderAt", "completeness" ]
+    }
+  }
+}
