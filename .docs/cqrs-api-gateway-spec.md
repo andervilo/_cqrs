@@ -24,7 +24,7 @@ Foram considerados os três documentos em `.docs`, os READMEs, os `pom.xml`, as 
 | `application.yaml` e `pom.xml` das duas aplicações | Java 21, Spring Boot 4.2.0, portas 8080 e 8081; Actuator e springdoc existentes |
 | [Compose](../compose.yaml) | Sobe infraestrutura Kafka/PostgreSQL/MySQL; ainda não sobe as aplicações |
 
-O código atual prevalece sobre exemplos de evolução dos documentos: somente `CREATED` e `CANCELLED` são aceitos nas consultas de pedidos. `SALES_DASHBOARD` está reservado e não possui endpoint implementado. Autenticação e autorização ainda não existem nas aplicações.
+O código atual prevalece sobre exemplos de evolução dos documentos: somente `CREATED` e `CANCELLED` são aceitos nas consultas de pedidos. `SALES_DASHBOARD` já está emitido (pelo command) e servido pelo query pelo endpoint `GET /api/queries/dashboard/sales` com scope `cqrs.dashboard.read`; a emissão é ativa por padrão. Autenticação e autorização ainda não existem nas aplicações.
 
 ## 2. Decisão arquitetural
 

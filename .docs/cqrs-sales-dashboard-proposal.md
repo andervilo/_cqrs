@@ -394,7 +394,7 @@ Pagamentos, margem/lucro, previsão, estoque, causas de cancelamento, datas cust
 - `top5CustomerRetainedValue` acompanha a concentração para permitir conferir a razão e aplicar regras sem arredondamento prematuro. A decomposição atribui eventual resíduo de arredondamento ao efeito de valor médio para fechar os centavos exibidos.
 - Os cinco UUIDs fixos terminam em cb001–cb005, na ordem TODAY, LAST_7_DAYS, LAST_30_DAYS, MONTH_TO_DATE e PREVIOUS_MONTH.
 - V5 no command cria solicitações/controle e índices; V3 no query cria a projection agregada. Não houve reescrita das migrations anteriores.
-- `DASHBOARD_ENABLED` é false por padrão para permitir atualizar todos os consumers antes de começar a emissão. Solicitações continuam sendo gravadas duravelmente; a primeira ativação calcula as cinco janelas.
+- Emissão ativa por padrão (`DASHBOARD_ENABLED=true`) — os consumers do query suportam v1. Ao ligar, a inicialização agenda as cinco janelas e o dispatcher/worker as calculam; `DASHBOARD_ENABLED=false` mantém as solicitações duráveis sem emissão.
 - Após esgotar tentativas de cálculo, solicitações normais/temporais não liberam o bloqueio. Rebuild explícito reinicia as tentativas. Falhas de publicação são tratadas separadamente pela outbox e seu endpoint de retry.
 - Não há dependência do JAR do command no query: contratos e regras de validação são independentes e verificados com fixtures integrais reais do produtor.
 

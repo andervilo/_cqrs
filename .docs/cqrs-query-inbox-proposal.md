@@ -31,8 +31,9 @@ criado outro database chamado `inbox`: a atomicidade será local à conexão MyS
 já configurada no query.
 
 Nesta etapa são sete projections, pois são as sete efetivamente emitidas pelo command.
-`SALES_DASHBOARD` permanece reservado, sem consumer handler ou tabela de dashboard,
-até definir seus períodos e regras. Não será criado um modelo fictício para esse tipo.
+`SALES_DASHBOARD` (emissão ativa por padrão) tem handler e tabela próprias
+(`SalesDashboardProjectionHandler` → `sales_dashboard_projection`); seus períodos e regras
+foram definidos na proposta revisada do dashboard.
 
 ## 2. Uma tabela e um conjunto de componentes por projection
 

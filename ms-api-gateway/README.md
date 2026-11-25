@@ -47,8 +47,7 @@ O `.env` do Compose não é carregado automaticamente pelas aplicações.
 O “Try it out” usa a origem pública configurada, sem alterar os DTOs dos serviços.
 Dashboard: `GET /api/queries/dashboard/sales?period=LAST_30_DAYS`. Retorna o agregado
 calculado no command, com comparativos, sinais e disponibilidade READY/STALE.
-Sem primeiro snapshot, retorna 503 DASHBOARD_INITIALIZING. Atualize os consumers
-e habilite `DASHBOARD_ENABLED=true` no command; o gateway não calcula o dashboard.
+Sem primeiro snapshot, retorna 503 DASHBOARD_INITIALIZING. O command calcula as janelas com `DASHBOARD_ENABLED=true` (padrão); o gateway não calcula o dashboard.
 Requisições ao query podem retornar estado antigo ou `404` logo após uma escrita.
 Usar a resposta do comando como confirmação imediata; atualizar projections com
 polling limitado no caller. Não há fallback ao command, cache ou retry automático,

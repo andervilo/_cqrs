@@ -136,7 +136,7 @@ A API da outbox permite consulta e retry operacional. O relay no próprio comman
 publica o JSON como valor Kafka e os metadados como headers. O `ms-order-query`
 consome esses eventos com inbox e controle de revisão, materializando as sete
 projections no MySQL. `SALES_DASHBOARD` é agregado por janela, com cálculo durável
-separado descrito abaixo; sua emissão depende de `DASHBOARD_ENABLED=true`.
+separado descrito abaixo; a emissão é ativa por padrão (`DASHBOARD_ENABLED=true`).
 Contratos e matriz de dependências estão na
 [especificação da outbox](../.docs/cqrs-projections-outbox-proposal.md).
 
@@ -313,10 +313,11 @@ $env:DASHBOARD_ENABLED='true'
 .\mvnw.cmd spring-boot:run
 ```
 
-O padrão é desabilitado para permitir rollout seguro. Mesmo desabilitado, criar,
-substituir itens e cancelar pedidos registram uma solicitação na transação de
-negócio. Essas solicitações ficam duráveis até a ativação. Não há cálculo global
-na transação do pedido. Solicitação sem commit não é processada.
+A emissão é ativa por padrão. Ao ligar, `DashboardStartup` agenda o cálculo das
+cinco janelas no início da aplicação; criar, substituir itens e cancelar pedidos
+registram solicitações na transação de negócio e executam a mesma rota. Set
+`DASHBOARD_ENABLED=false` para manter as solicitações duráveis sem emissão.
+Solicitação sem commit não é processada.
 
 A V5 cria `dashboard_refresh_request` e cinco linhas de
 `dashboard_refresh_control`, com UUIDs fixos terminados em cb001–cb005 na ordem das
@@ -330,7 +331,7 @@ publica no tópico configurado. Reentrega não duplica indicadores no query.
 
 | Variável | Padrão |
 | --- | --- |
-| DASHBOARD_ENABLED | false |
+| DASHBOARD_ENABLED | true |
 | DASHBOARD_DISPATCH_BATCH_SIZE | 100 |
 | DASHBOARD_DISPATCH_INTERVAL_MS | 1000 |
 | DASHBOARD_WORKER_INTERVAL_MS | 2000 |

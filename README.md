@@ -14,8 +14,8 @@ do modelo de escrita. Swagger centralizado: http://localhost:8082/swagger-ui.htm
 As aplicações são executadas por Maven/IDE; o Compose abaixo inicia a infraestrutura.
 
 Dashboard comercial: `GET /api/queries/dashboard/sales?period=LAST_30_DAYS` pela
-porta 8082. Após atualizar os consumers do query, habilite `DASHBOARD_ENABLED=true`
-no command para calcular as cinco janelas. Consulte a
+porta 8082. O command emite os snapshots por padrão (`DASHBOARD_ENABLED=true`)
+para as cinco janelas. Consulte a
 [proposta e referência de implementação](.docs/cqrs-sales-dashboard-proposal.md).
 
 Docker Compose com Kafka 4.1.2 em modo KRaft, PostgreSQL 17 e MySQL 8.4.

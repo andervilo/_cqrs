@@ -367,7 +367,7 @@ representar todas as combinações de `from`/`to`. Antes de habilitar esse tipo,
 necessário escolher entre períodos fixos (por exemplo, dias), fatos de venda a serem
 agregados pelo query ou outra estratégia de materialização.
 
-A recomendação é manter o enum reservado e adiar sua emissão. Também ficam para essa
+O enum inclui `SALES_DASHBOARD`, cuja emissão foi implementada pela etapa do dashboard (ver proposta revisada do dashboard). Também ficam para essa
 etapa a definição de receita efetivamente paga, devoluções, precisão de limites de
 período, timezone de negócio e produtos elegíveis. Pedidos `CREATED` não serão
 apresentados como receita recebida.
