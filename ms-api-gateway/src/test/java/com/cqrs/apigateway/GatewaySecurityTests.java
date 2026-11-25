@@ -63,10 +63,12 @@ class GatewaySecurityTests {
             var destination = endpoint.query() ? query : command;
             assertThat(destination.calls.getLast().headers().get("Authorization")).containsExactly("Bearer " + token);
         }
-        assertThat(command.calls).hasSize(21); assertThat(query.calls).hasSize(7);
+        assertThat(command.calls).hasSize(21); assertThat(query.calls).hasSize(8);
     }
 
     @Test void normalScopesDoNotGrantOperationsOrDocs() {
+        client.get().uri("/api/queries/dashboard/sales").headers(h->h.setBearerAuth(identity.token("cqrs.read cqrs.command.read cqrs.write")))
+                .exchange().expectStatus().isForbidden();
         for (String path : List.of("/api/v1/order-outbox", "/v3/api-docs/command"))
             client.get().uri(path).headers(h -> h.setBearerAuth(identity.token("cqrs.read cqrs.write cqrs.command.read")))
                     .exchange().expectStatus().isForbidden();

@@ -82,7 +82,7 @@ class GatewayRoutingTests {
     }
 
     @Test void rejectsUnknownPathsAndMethodsWithoutCallingBackends() {
-        client.get().uri("/api/queries/dashboard/sales").exchange().expectStatus().isNotFound();
+        client.get().uri("/api/queries/dashboard/unknown").exchange().expectStatus().isNotFound();
         client.get().uri("/api/v1/projections/unknown").exchange().expectStatus().isNotFound();
         client.post().uri("/api/queries/orders").exchange().expectStatus().isEqualTo(405)
                 .expectHeader().valueEquals("Allow", "GET");

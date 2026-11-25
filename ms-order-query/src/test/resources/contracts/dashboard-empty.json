@@ -1,0 +1,454 @@
+{
+  "dashboardId" : "8b99f328-cb8c-4e22-8aa6-c04fe81cb001",
+  "periodCode" : "TODAY",
+  "timeZone" : "America/Sao_Paulo",
+  "currency" : "BRL",
+  "sourceObservedAt" : "2026-11-23T14:00:00Z",
+  "computedAt" : "2026-11-23T14:00:00Z",
+  "definitionsVersion" : 1,
+  "rulesVersion" : 1,
+  "period" : {
+    "from" : "2026-11-23T03:00:00Z",
+    "to" : "2026-11-23T14:00:00Z",
+    "inProgress" : true
+  },
+  "comparison" : {
+    "mode" : "PREVIOUS_DAY_SAME_ELAPSED",
+    "from" : "2026-11-22T03:00:00Z",
+    "to" : "2026-11-22T14:00:00Z",
+    "status" : "AVAILABLE",
+    "durationSeconds" : 39600
+  },
+  "summary" : {
+    "orderCount" : {
+      "value" : 0,
+      "previousValue" : 0,
+      "changeAbsolute" : 0,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "COUNT",
+      "favorableDirection" : "UP"
+    },
+    "retainedUnits" : {
+      "value" : 0,
+      "previousValue" : 0,
+      "changeAbsolute" : 0,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "COUNT",
+      "favorableDirection" : "UP"
+    },
+    "cancelledUnits" : {
+      "value" : 0,
+      "previousValue" : 0,
+      "changeAbsolute" : 0,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "COUNT",
+      "favorableDirection" : "DOWN"
+    },
+    "requestedUnits" : {
+      "value" : 0,
+      "previousValue" : 0,
+      "changeAbsolute" : 0,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "COUNT",
+      "favorableDirection" : "UP"
+    },
+    "requestedValue" : {
+      "value" : 0.00,
+      "previousValue" : 0.00,
+      "changeAbsolute" : 0.00,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "BRL",
+      "favorableDirection" : "UP"
+    },
+    "activeBuyerCount" : {
+      "value" : 0,
+      "previousValue" : 0,
+      "changeAbsolute" : 0,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "COUNT",
+      "favorableDirection" : "UP"
+    },
+    "activeOrderCount" : {
+      "value" : 0,
+      "previousValue" : 0,
+      "changeAbsolute" : 0,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "COUNT",
+      "favorableDirection" : "UP"
+    },
+    "cancellationRate" : {
+      "value" : null,
+      "previousValue" : null,
+      "changeAbsolute" : null,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "NO_DENOMINATOR",
+      "previousStatus" : "NO_DENOMINATOR",
+      "comparisonStatus" : "NO_DENOMINATOR",
+      "unit" : "PERCENT",
+      "favorableDirection" : "DOWN"
+    },
+    "retainedOrderValue" : {
+      "value" : 0.00,
+      "previousValue" : 0.00,
+      "changeAbsolute" : 0.00,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "BRL",
+      "favorableDirection" : "UP"
+    },
+    "cancelledOrderCount" : {
+      "value" : 0,
+      "previousValue" : 0,
+      "changeAbsolute" : 0,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "COUNT",
+      "favorableDirection" : "DOWN"
+    },
+    "cancelledOrderValue" : {
+      "value" : 0.00,
+      "previousValue" : 0.00,
+      "changeAbsolute" : 0.00,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "BRL",
+      "favorableDirection" : "DOWN"
+    },
+    "newActiveBuyerCount" : {
+      "value" : 0,
+      "previousValue" : 0,
+      "changeAbsolute" : 0,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "COUNT",
+      "favorableDirection" : "UP"
+    },
+    "returningBuyerShare" : {
+      "value" : null,
+      "previousValue" : null,
+      "changeAbsolute" : null,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "NO_DENOMINATOR",
+      "previousStatus" : "NO_DENOMINATOR",
+      "comparisonStatus" : "NO_DENOMINATOR",
+      "unit" : "PERCENT",
+      "favorableDirection" : "CONTEXT_DEPENDENT"
+    },
+    "ordersPerActiveBuyer" : {
+      "value" : null,
+      "previousValue" : null,
+      "changeAbsolute" : null,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "NO_DENOMINATOR",
+      "previousStatus" : "NO_DENOMINATOR",
+      "comparisonStatus" : "NO_DENOMINATOR",
+      "unit" : "RATIO",
+      "favorableDirection" : "CONTEXT_DEPENDENT"
+    },
+    "cancellationValueRate" : {
+      "value" : null,
+      "previousValue" : null,
+      "changeAbsolute" : null,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "NO_DENOMINATOR",
+      "previousStatus" : "NO_DENOMINATOR",
+      "comparisonStatus" : "NO_DENOMINATOR",
+      "unit" : "PERCENT",
+      "favorableDirection" : "DOWN"
+    },
+    "top5ProductValueShare" : {
+      "value" : null,
+      "previousValue" : null,
+      "changeAbsolute" : null,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "NO_DENOMINATOR",
+      "previousStatus" : "NO_DENOMINATOR",
+      "comparisonStatus" : "NO_DENOMINATOR",
+      "unit" : "PERCENT",
+      "favorableDirection" : "DOWN"
+    },
+    "top5CustomerValueShare" : {
+      "value" : null,
+      "previousValue" : null,
+      "changeAbsolute" : null,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "NO_DENOMINATOR",
+      "previousStatus" : "NO_DENOMINATOR",
+      "comparisonStatus" : "NO_DENOMINATOR",
+      "unit" : "PERCENT",
+      "favorableDirection" : "DOWN"
+    },
+    "averageActiveOrderValue" : {
+      "value" : null,
+      "previousValue" : null,
+      "changeAbsolute" : null,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "NO_DENOMINATOR",
+      "previousStatus" : "NO_DENOMINATOR",
+      "comparisonStatus" : "NO_DENOMINATOR",
+      "unit" : "BRL",
+      "favorableDirection" : "CONTEXT_DEPENDENT"
+    },
+    "returningActiveBuyerCount" : {
+      "value" : 0,
+      "previousValue" : 0,
+      "changeAbsolute" : 0,
+      "changePercent" : null,
+      "changePercentagePoints" : null,
+      "status" : "AVAILABLE",
+      "previousStatus" : "AVAILABLE",
+      "comparisonStatus" : "NO_BASELINE",
+      "unit" : "COUNT",
+      "favorableDirection" : "UP"
+    }
+  },
+  "orders" : {
+    "orderCount" : 0,
+    "activeOrderCount" : 0,
+    "cancelledOrderCount" : 0,
+    "requestedValue" : 0.00,
+    "retainedOrderValue" : 0.00,
+    "cancelledOrderValue" : 0.00,
+    "cancellationRate" : null,
+    "cancellationValueRate" : null,
+    "averageActiveOrderValue" : null,
+    "requestedUnits" : 0,
+    "retainedUnits" : 0,
+    "cancelledUnits" : 0
+  },
+  "previousOrders" : {
+    "orderCount" : 0,
+    "activeOrderCount" : 0,
+    "cancelledOrderCount" : 0,
+    "requestedValue" : 0.00,
+    "retainedOrderValue" : 0.00,
+    "cancelledOrderValue" : 0.00,
+    "cancellationRate" : null,
+    "cancellationValueRate" : null,
+    "averageActiveOrderValue" : null,
+    "requestedUnits" : 0,
+    "retainedUnits" : 0,
+    "cancelledUnits" : 0
+  },
+  "customers" : {
+    "activeBuyerCount" : 0,
+    "newActiveBuyerCount" : 0,
+    "returningActiveBuyerCount" : 0,
+    "returningBuyerShare" : null,
+    "ordersPerActiveBuyer" : null,
+    "top5CustomerValueShare" : null,
+    "top5CustomerRetainedValue" : 0.00
+  },
+  "previousCustomers" : {
+    "activeBuyerCount" : 0,
+    "newActiveBuyerCount" : 0,
+    "returningActiveBuyerCount" : 0,
+    "returningBuyerShare" : null,
+    "ordersPerActiveBuyer" : null,
+    "top5CustomerValueShare" : null,
+    "top5CustomerRetainedValue" : 0.00
+  },
+  "valueChangeDrivers" : {
+    "status" : "NO_DENOMINATOR",
+    "totalChange" : null,
+    "volumeEffect" : null,
+    "averageValueEffect" : null
+  },
+  "products" : {
+    "top5ProductValueShare" : null,
+    "previousTop5ProductValueShare" : null,
+    "otherProductsRetainedValue" : 0.00,
+    "byRetainedValue" : [ ],
+    "byRetainedUnits" : [ ],
+    "declining" : [ ]
+  },
+  "daily" : [ {
+    "date" : "2026-11-23",
+    "from" : "2026-11-23T03:00:00Z",
+    "to" : "2026-11-23T14:00:00Z",
+    "orderCount" : 0,
+    "activeOrderCount" : 0,
+    "cancelledOrderCount" : 0,
+    "requestedValue" : 0.00,
+    "retainedOrderValue" : 0.00,
+    "cancelledOrderValue" : 0.00,
+    "requestedUnits" : 0,
+    "retainedUnits" : 0,
+    "cancelledUnits" : 0,
+    "activeBuyerCount" : 0
+  } ],
+  "comparisonDaily" : [ {
+    "date" : "2026-11-22",
+    "from" : "2026-11-22T03:00:00Z",
+    "to" : "2026-11-22T14:00:00Z",
+    "orderCount" : 0,
+    "activeOrderCount" : 0,
+    "cancelledOrderCount" : 0,
+    "requestedValue" : 0.00,
+    "retainedOrderValue" : 0.00,
+    "cancelledOrderValue" : 0.00,
+    "requestedUnits" : 0,
+    "retainedUnits" : 0,
+    "cancelledUnits" : 0,
+    "activeBuyerCount" : 0
+  } ],
+  "openPortfolio" : {
+    "scope" : "GLOBAL_AS_OF_REFERENCE",
+    "ageBuckets" : [ {
+      "code" : "LT_24H",
+      "orderCount" : 0,
+      "value" : 0.00,
+      "drillDown" : {
+        "method" : "GET",
+        "path" : "/api/queries/orders",
+        "query" : {
+          "to" : "2026-11-23T14:00:00Z",
+          "from" : "2026-11-22T14:00:00.000001Z",
+          "status" : "CREATED"
+        },
+        "requiredScope" : "cqrs.read"
+      }
+    }, {
+      "code" : "FROM_24H_TO_48H",
+      "orderCount" : 0,
+      "value" : 0.00,
+      "drillDown" : {
+        "method" : "GET",
+        "path" : "/api/queries/orders",
+        "query" : {
+          "to" : "2026-11-22T14:00:00.000001Z",
+          "from" : "2026-11-21T14:00:00.000001Z",
+          "status" : "CREATED"
+        },
+        "requiredScope" : "cqrs.read"
+      }
+    }, {
+      "code" : "FROM_48H_TO_72H",
+      "orderCount" : 0,
+      "value" : 0.00,
+      "drillDown" : {
+        "method" : "GET",
+        "path" : "/api/queries/orders",
+        "query" : {
+          "to" : "2026-11-21T14:00:00.000001Z",
+          "from" : "2026-11-20T14:00:00.000001Z",
+          "status" : "CREATED"
+        },
+        "requiredScope" : "cqrs.read"
+      }
+    }, {
+      "code" : "GTE_72H",
+      "orderCount" : 0,
+      "value" : 0.00,
+      "drillDown" : {
+        "method" : "GET",
+        "path" : "/api/queries/orders",
+        "query" : {
+          "to" : "2026-11-20T14:00:00.000001Z",
+          "status" : "CREATED"
+        },
+        "requiredScope" : "cqrs.read"
+      }
+    } ],
+    "orderCount" : 0,
+    "value" : 0.00,
+    "olderThanOrEqual48h" : {
+      "code" : "GTE_48H",
+      "orderCount" : 0,
+      "value" : 0.00,
+      "drillDown" : {
+        "method" : "GET",
+        "path" : "/api/queries/orders",
+        "query" : {
+          "to" : "2026-11-21T14:00:00.000001Z",
+          "status" : "CREATED"
+        },
+        "requiredScope" : "cqrs.read"
+      }
+    },
+    "oldestCreatedAt" : null
+  },
+  "insights" : [ ],
+  "additionalInsightCount" : 0,
+  "unavailableMetrics" : [ {
+    "code" : "receivedRevenue",
+    "value" : null,
+    "status" : "UNAVAILABLE",
+    "reason" : "PAYMENT_NOT_MODELED"
+  }, {
+    "code" : "grossMargin",
+    "value" : null,
+    "status" : "UNAVAILABLE",
+    "reason" : "COST_NOT_MODELED"
+  }, {
+    "code" : "profit",
+    "value" : null,
+    "status" : "UNAVAILABLE",
+    "reason" : "COST_AND_PAYMENT_NOT_MODELED"
+  } ],
+  "appliedRules" : {
+    "minimumOrderSample" : 30,
+    "cancellationRateThreshold" : 10,
+    "cancellationIncreasePoints" : 5,
+    "demandDropPercent" : 15,
+    "retainedValueGrowthPercent" : 15,
+    "minimumProductSample" : 5,
+    "productDropPercent" : 20,
+    "minimumBuyerSample" : 20,
+    "customerConcentrationPercent" : 60,
+    "agingHours" : 48
+  },
+  "dataCoverage" : {
+    "source" : "order_command.orders",
+    "generation" : "CURRENT_DATABASE",
+    "earliestOrderAt" : null,
+    "completeness" : "NOT_AUDITED"
+  }
+}

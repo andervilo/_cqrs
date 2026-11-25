@@ -55,6 +55,23 @@ function Test-ContainerCommand([string]$name, [string[]]$commandArguments) {
     return $LASTEXITCODE -eq 0
 }
 
+function Wait-Dashboard([string]$baseUrl, [decimal]$activeValue, [decimal]$cancelledValue, [long]$units) {
+    $deadline = [DateTime]::UtcNow.AddSeconds(90)
+    do {
+        try {
+            $response = Invoke-RestMethod -Uri "$baseUrl/api/queries/dashboard/sales?period=LAST_30_DAYS" -TimeoutSec 10
+            $summary = $response.dashboard.orders
+            if ($summary.orderCount -eq 1 -and $summary.retainedOrderValue -eq $activeValue `
+                -and $summary.cancelledOrderValue -eq $cancelledValue -and $summary.retainedUnits -eq $units) {
+                if ($response.dashboard.unavailableMetrics[0].value -ne $null) { throw 'Revenue must remain unavailable.' }
+                return $response
+            }
+        } catch { }
+        Start-Sleep -Seconds 1
+    } while ([DateTime]::UtcNow -lt $deadline)
+    throw "Dashboard did not converge to active=$activeValue cancelled=$cancelledValue units=$units. See $logRoot"
+}
+
 try {
     if (-not $SkipBuild) {
         foreach ($module in @('ms-order-command', 'ms-order-query', 'ms-api-gateway')) {
@@ -99,14 +116,16 @@ try {
 
     Start-ServiceJar 'ms-order-command' $commandPort @("--spring.datasource.url=jdbc:postgresql://localhost:$postgresPort/cqrs",
         '--spring.datasource.username=cqrs', '--spring.datasource.password=smoke_dev',
-        "--spring.kafka.bootstrap-servers=localhost:$kafkaPort", "--outbox.relay.topic=$topic")
+        "--spring.kafka.bootstrap-servers=localhost:$kafkaPort", "--outbox.relay.topic=$topic",
+        '--dashboard.enabled=true', '--dashboard.debounce-ms=0', '--dashboard.worker-interval-ms=200',
+        '--dashboard.initial-delay-ms=1000')
     Start-ServiceJar 'ms-order-query' $queryPort @("--spring.datasource.url=jdbc:mysql://localhost:$mysqlPort/cqrs?connectionTimeZone=UTC&sslMode=DISABLED&allowPublicKeyRetrieval=true",
         '--spring.datasource.username=cqrs', '--spring.datasource.password=smoke_dev',
         "--spring.kafka.bootstrap-servers=localhost:$kafkaPort", "--query.projections.topic=$topic",
         "--query.projections.dlt-topic=$topic.DLT")
     Start-ServiceJar 'ms-api-gateway' $gatewayPort @('--spring.profiles.active=local',
         "--gateway.command-service-url=http://localhost:$commandPort", "--gateway.query-service-url=http://localhost:$queryPort",
-        "--gateway.public-url=http://localhost:$gatewayPort")
+        "--gateway.public-url=http://localhost:$gatewayPort", '--gateway.maintenance-enabled=true')
     Wait-Health $commandPort
     Wait-Health $queryPort
     Wait-Health $gatewayPort
@@ -127,12 +146,25 @@ try {
         Start-Sleep -Seconds 1
     } while ([DateTime]::UtcNow -lt $deadline)
     if ($projection.orderId -ne $order.id -or $projection.totalAmount -ne 25) { throw 'Order projection did not converge.' }
+    Write-Output 'Verifying aggregated dashboard after creation, item replacement and cancellation.'
+    $dashboard = Wait-Dashboard $baseUrl 25 0 2
+    if ($dashboard.dashboard.products.byRetainedValue[0].productId -ne $product.id) { throw 'Wrong dashboard product.' }
+    Invoke-RestMethod -Method Put -Uri "$baseUrl/api/v1/orders/$($order.id)/items" -ContentType 'application/json' `
+        -Body (@{items=@(@{productId=$product.id;quantity=3})} | ConvertTo-Json -Depth 5) | Out-Null
+    $dashboard = Wait-Dashboard $baseUrl 37.50 0 3
+    Invoke-RestMethod -Method Post -Uri "$baseUrl/api/v1/orders/$($order.id)/cancel" | Out-Null
+    $dashboard = Wait-Dashboard $baseUrl 0 37.50 0
+    if ($dashboard.dashboard.products.byRetainedValue.Count -ne 0) { throw 'Cancelled product remained in active ranking.' }
+    $rebuild = Invoke-WebRequest -UseBasicParsing -Method Post -Uri "$baseUrl/api/v1/projections/rebuild?resourceType=DASHBOARD"
+    if ($rebuild.StatusCode -ne 202 -or ($rebuild.Content | ConvertFrom-Json).periodCodes.Count -ne 5) {
+        throw 'Dashboard rebuild did not acknowledge all five windows.'
+    }
     foreach ($document in @('command','query')) {
         $openapi = Invoke-RestMethod -Uri "$baseUrl/v3/api-docs/$document"
         if ($openapi.servers[0].url -ne $baseUrl) { throw "Incorrect OpenAPI server: $document" }
         if ($openapi.paths.PSObject.Properties.Count -eq 0) { throw "Empty OpenAPI: $document" }
     }
-    Write-Output 'PASS: gateway -> command -> PostgreSQL/outbox -> Kafka -> query inbox/MySQL -> gateway projection.'
+    Write-Output 'PASS: gateway -> command -> durable dashboard refresh -> aggregated outbox -> Kafka -> inbox/MySQL -> dashboard; create/replace/cancel converged.'
     Write-Output "Logs: $logRoot"
 } finally {
     $ErrorActionPreference = 'Continue'
