@@ -37,6 +37,7 @@ public class EndpointCatalog {
                     "GET", "cqrs.read", true, false, false);
         }
         add("/api/queries/customers/{customerId}/orders", "GET", "cqrs.read", true, false, false);
+        add("/api/queries/dashboard/sales", "GET", "cqrs.dashboard.read", true, false, false);
     }
 
     private void command(String path, String... methods) {
