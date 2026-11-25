@@ -1,0 +1,12 @@
+{
+  "apiBaseUrl": "http://localhost:8082",
+  "authMode": "none",
+  "localScopes": [
+    "cqrs.read",
+    "cqrs.dashboard.read",
+    "cqrs.command.read",
+    "cqrs.write",
+    "cqrs.ops.read",
+    "cqrs.ops.write"
+  ]
+}
