@@ -15,6 +15,7 @@ import java.util.*;
 import com.cqrs.ordercommand.application.projection.ProjectionUpdateService;
 import com.cqrs.ordercommand.infrastructure.persistence.ProjectionLocks;
 import org.springframework.transaction.annotation.Isolation;
+import com.cqrs.ordercommand.application.dashboard.DashboardRefreshRequests;
 
 @Service
 @Transactional(readOnly = true)
@@ -25,10 +26,12 @@ public class OrderService {
     private final ProjectionUpdateService projections;
     private final ProjectionLocks locks;
     private final ApiMapper mapper;
+    private final DashboardRefreshRequests dashboard;
     public OrderService(OrderRepository orders, CustomerRepository customers, ItemService items,
-                        ProjectionUpdateService projections, ProjectionLocks locks, ApiMapper mapper) {
+                        ProjectionUpdateService projections, ProjectionLocks locks, ApiMapper mapper, DashboardRefreshRequests dashboard) {
         this.orders = orders; this.customers = customers; this.items = items;
         this.projections=projections; this.locks=locks; this.mapper = mapper;
+        this.dashboard=dashboard;
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public OrderDtos.Response create(OrderDtos.Create input) {
@@ -39,6 +42,7 @@ public class OrderService {
         var order = Order.create(customer.getId(), prepared.items(), input.notes());
         var entity = orders.saveAndFlush(new OrderEntity(order, customer, prepared.catalog()));
         projections.orderChanged(entity.getId(), entity.getCustomer().getId(), true);
+        dashboard.orderChanged();
         return mapper.order(entity);
     }
     public OrderDtos.Response get(UUID id) { return mapper.order(require(id)); }
@@ -57,6 +61,7 @@ public class OrderService {
         entity.replaceItems(changed, prepared.catalog());
         orders.flush();
         projections.orderChanged(entity.getId(), entity.getCustomer().getId(), false);
+        dashboard.orderChanged();
         return mapper.order(entity);
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -66,6 +71,7 @@ public class OrderService {
         entity.cancel(entity.toDomain().cancel());
         orders.flush();
         projections.orderChanged(entity.getId(), entity.getCustomer().getId(), false);
+        dashboard.orderChanged();
         return mapper.order(entity);
     }
     private OrderEntity require(UUID id) {

@@ -83,3 +83,28 @@ outbox:
     create-topic: ${OUTBOX_RELAY_CREATE_TOPIC:true}
     partitions: ${OUTBOX_RELAY_PARTITIONS:3}
     replicas: ${OUTBOX_RELAY_REPLICAS:1}
+
+dashboard:
+  # Enable only after all query consumers support SALES_DASHBOARD. Requests remain durable while disabled.
+  enabled: ${DASHBOARD_ENABLED:false}
+  dispatch-batch-size: ${DASHBOARD_DISPATCH_BATCH_SIZE:100}
+  debounce-ms: ${DASHBOARD_DEBOUNCE_MS:3000}
+  max-attempts: ${DASHBOARD_MAX_ATTEMPTS:3}
+  retry-initial-delay-ms: ${DASHBOARD_RETRY_INITIAL_DELAY_MS:1000}
+  retry-max-delay-ms: ${DASHBOARD_RETRY_MAX_DELAY_MS:30000}
+  statement-timeout-ms: ${DASHBOARD_STATEMENT_TIMEOUT_MS:30000}
+  dispatch-interval-ms: ${DASHBOARD_DISPATCH_INTERVAL_MS:1000}
+  worker-interval-ms: ${DASHBOARD_WORKER_INTERVAL_MS:2000}
+  temporal-interval-ms: ${DASHBOARD_TEMPORAL_INTERVAL_MS:60000}
+  initial-delay-ms: ${DASHBOARD_INITIAL_DELAY_MS:5000}
+  rules:
+    minimum-order-sample: ${DASHBOARD_MINIMUM_ORDER_SAMPLE:30}
+    cancellation-rate-threshold: ${DASHBOARD_CANCELLATION_RATE_THRESHOLD:10}
+    cancellation-increase-points: ${DASHBOARD_CANCELLATION_INCREASE_POINTS:5}
+    demand-drop-percent: ${DASHBOARD_DEMAND_DROP_PERCENT:15}
+    retained-value-growth-percent: ${DASHBOARD_RETAINED_VALUE_GROWTH_PERCENT:15}
+    minimum-product-sample: ${DASHBOARD_MINIMUM_PRODUCT_SAMPLE:5}
+    product-drop-percent: ${DASHBOARD_PRODUCT_DROP_PERCENT:20}
+    minimum-buyer-sample: ${DASHBOARD_MINIMUM_BUYER_SAMPLE:20}
+    customer-concentration-percent: ${DASHBOARD_CUSTOMER_CONCENTRATION_PERCENT:60}
+    aging-hours: 48
