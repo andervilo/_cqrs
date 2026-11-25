@@ -85,8 +85,9 @@ outbox:
     replicas: ${OUTBOX_RELAY_REPLICAS:1}
 
 dashboard:
-  # Enable only after all query consumers support SALES_DASHBOARD. Requests remain durable while disabled.
-  enabled: ${DASHBOARD_ENABLED:false}
+  # Emits SALES_DASHBOARD snapshots asynchronously via dashboard_refresh_request.
+  # Set DASHBOARD_ENABLED=false to keep requests durable without emission.
+  enabled: ${DASHBOARD_ENABLED:true}
   dispatch-batch-size: ${DASHBOARD_DISPATCH_BATCH_SIZE:100}
   debounce-ms: ${DASHBOARD_DEBOUNCE_MS:3000}
   max-attempts: ${DASHBOARD_MAX_ATTEMPTS:3}

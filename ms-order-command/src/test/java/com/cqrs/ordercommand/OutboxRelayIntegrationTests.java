@@ -27,7 +27,8 @@ import static org.mockito.Mockito.*;
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={
     "outbox.relay.enabled=false","outbox.relay.topic=relay-integration-test.v1",
-    "outbox.relay.max-attempts=2","outbox.relay.retry-initial-delay-ms=2000","outbox.relay.retry-max-delay-ms=4000"
+    "outbox.relay.max-attempts=2","outbox.relay.retry-initial-delay-ms=2000","outbox.relay.retry-max-delay-ms=4000",
+    "dashboard.enabled=false"
 })
 class OutboxRelayIntegrationTests {
     @Autowired JdbcTemplate jdbc;

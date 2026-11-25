@@ -93,7 +93,8 @@ public class ProjectionUpdateService {
                 case ORDER_SUMMARY -> orderCache.computeIfAbsent(target.id(),orders::build).summary();
                 case ORDER_DETAIL -> orderCache.computeIfAbsent(target.id(),orders::build).detail();
                 case CUSTOMER_ORDER_HISTORY -> orderCache.computeIfAbsent(target.id(),orders::build).history();
-                case SALES_DASHBOARD -> throw new UnsupportedOperationException("Dashboard projection is reserved");
+                case SALES_DASHBOARD -> throw new UnsupportedOperationException(
+                        "SALES_DASHBOARD is emitted by DashboardRefreshWorker via dashboard_refresh_request, not by the generic projection path");
             };
             var order = switch (target.type()) {
                 case ORDER_SUMMARY, ORDER_DETAIL, CUSTOMER_ORDER_HISTORY -> em.getReference(OrderEntity.class,target.id());
